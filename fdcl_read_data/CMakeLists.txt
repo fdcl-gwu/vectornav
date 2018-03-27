@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.4)
-project(ez_async_data)
+project(fdcl_read_data)
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 
@@ -14,12 +14,12 @@ set(SOURCE_FILES
 
 include_directories(../cpp/include)
 
-add_executable(ez_async_data ${SOURCE_FILES})
+add_executable(fdcl_read_data ${SOURCE_FILES})
 
-target_link_libraries(ez_async_data PRIVATE libvncxx)
+target_link_libraries(fdcl_read_data PRIVATE libvncxx)
 
 if (UNIX OR APPLE)
-	target_link_libraries(ez_async_data LINK_PUBLIC pthread)
+	target_link_libraries(fdcl_read_data LINK_PUBLIC pthread)
 else()
-	target_link_libraries(ez_async_data LINK_PUBLIC Advapi32 SetupAPI)
+	target_link_libraries(fdcl_read_data LINK_PUBLIC Advapi32 SetupAPI)
 endif()

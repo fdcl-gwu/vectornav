@@ -1,8 +1,5 @@
-# Executables
-jetson
-base
-uav_gps
-read_rtk
+# Build dir
+/build
 
 # Saved data
 test0.txt
@@ -600,4 +597,3 @@ $RECYCLE.BIN/
 
 
 # End of https://www.gitignore.io/api/c,ros,tex,vim,c++,macos,latex,linux,matlab,python,windows,libreoffice,sublimetext,microsoftoffice,archlinuxpackages
-

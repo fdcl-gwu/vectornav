@@ -2,96 +2,139 @@
 
 fdcl_vn100::fdcl_vn100()
 {
-}
+	// This example walks through using the EzAsyncData class to easily access
+	// asynchronous data from a VectorNav sensor at a slight performance hit which is
+	// acceptable for many applications, especially simple data logging.
 
-fdcl_vn100::~fdcl_vn100()
-{
-}
+	// First determine which COM port your sensor is attached to and update the
+	// constant below. Also, if you have changed your sensor from the factory
+	// default baudrate of 115200, you will need to update the baudrate
+	// constant below as well.
+	// const string SensorPort = "COM1";                             // Windows format for physical and virtual (USB) serial port.
+	// const string SensorPort = "/dev/ttyS1";                    // Linux format for physical serial port.
+	const string SensorPort = "/dev/ttyUSB0";                  // Linux format for virtual (USB) serial port.
+	// const string SensorPort = "/dev/tty.usbserial-FTWV7X38";   // Mac OS X format for virtual (USB) serial port.
+	// const string SensorPort = "/dev/ttyS0";                    // CYGWIN format. Usually the Windows COM port number minus 1. This would connect to COM1.
+	const uint32_t SensorBaudrate = 115200;
 
-void fdcl_vn100::load_config(fdcl_param& cfg)
-{
-	cfg.read("IMU.port",port);
-	cfg.read("IMU.baud_rate",baud_rate);
+	// We create and connect to a sensor by the call below.
+	EzAsyncData* ez = EzAsyncData::connect(SensorPort, SensorBaudrate);
 
-	cout << "IMU: port " << port << endl;
-	cout << "IMU: baud_rate " << baud_rate << endl;
-}
+	// Now let's display the latest yaw, pitch, roll data at 5 Hz for 5 seconds.
+	for (int i = 0; i < 25; i++)
+	{
+		Thread::sleepMs(200);
 
-void fdcl_vn100::open()
-{
-	open(port,baud_rate);
-}
+		// This reads the latest data that has been processed by the EzAsyncData class.
+		CompositeData cd = ez->currentData();
 
-void fdcl_vn100::open(string port, const int baud_rate)
-{
-	this->port=port;
-	this->baud_rate=baud_rate;
+		// Make sure that we have some yaw, pitch, roll data.
+		if (!cd.hasYawPitchRoll())
+			cout << "YPR Unavailable." << endl;
+		else
+			cout << "Current YPR: " << cd.yawPitchRoll() << endl;
+	}
 
+	// Most of the asynchronous data handling is done by EzAsyncData but there are times
+	// when we wish to configure the sensor directly while still having EzAsyncData do
+	// most of the grunt work.This is easily accomplished and we show changing the ASCII
+	// asynchronous data output type here.
+	try
+	{
+		ez->sensor()->writeAsyncDataOutputType(VNYPR);
+	}
+	catch (...)
+	{
+		cout << "Error setting async data output type." << endl;
+	}
 
-	errorCode = vn100_connect(&vn100,port.c_str(),baud_rate);
-	if(errorCode == VNERR_NO_ERROR)
-		printf("fdcl_vn100: connected\n");
-	else
-		printf("fdcl_vn100: ERROR: IMU cannot be connected (VN_ERROR_CODE: %d)\n",errorCode);
+	cout << "[New ASCII Async Output]" << endl;
 
-	// Disable ASCII asynchronous messages
-	errorCode = vn100_setAsynchronousDataOutputType(
-        &vn100,
-        VNASYNC_OFF,
-        true);
+	// We can now display yaw, pitch, roll data from the new ASCII asynchronous data type.
+	for (int i = 0; i < 25; i++)
+	{
+		Thread::sleepMs(200);
 
-	// Configure the binary messages output
-	errorCode = vn100_setBinaryOutput1Configuration(
-		&vn100,
-		BINARY_ASYNC_MODE_SERIAL_2,	// This should be the one we are connected to now.
-		4,							// Outputting binary data at 200 Hz (800 Hz on-board filter / 4 = 200 Hz).
-		BG1_YPR | BG1_ANGULAR_RATE | BG1_ACCEL,
-		BG3_NONE,
-		BG5_NONE,//BG5_LINEAR_ACCEL_NED,
-		true);
-	if(errorCode == VNERR_NO_ERROR)
-		printf("fdcl_vn100: IMU configured \n");
-	else
-		printf("fdcl_vn100: ERROR: IMU cannot be configured (VN_ERROR_CODE: %d)\n",errorCode);
+		CompositeData cd = ez->currentData();
 
+		if (!cd.hasYawPitchRoll())
+			cout << "YPR Unavailable." << endl;
+		else
+			cout << "Current YPR: " << cd.yawPitchRoll() << endl;
+	}
 
-	// Now register to receive notifications when a new asynchronous binary packet is received.
-	errorCode = vn100_registerAsyncDataReceivedListener(&vn100, &fdcl_vn100::callback);
+	// The CompositeData structure contains some helper methods for getting data
+	// into various formats. For example, although the sensor is configured to
+	// output yaw, pitch, roll, our application might need it as a quaternion
+	// value. However, if we query the quaternion field, we see that we don't
+	// have any data.
 
-}
+	cout << "HasQuaternion: " << ez->currentData().hasQuaternion() << endl;
 
-void fdcl_vn100::close()
-{
-	errorCode = vn100_unregisterAsyncDataReceivedListener(&vn100, &fdcl_vn100::callback);
-	errorCode = vn100_disconnect(&vn100);
-	printf("fdcl_vn100: disconnected\n");
-}
+	// Uncommenting the line below will cause an exception to be thrown since
+	// quaternion data is not available.
 
-void fdcl_vn100::callback(void* sender, VnDeviceCompositeData* data)
-{
-	double YPR[3], W_i[3], a_i[3];
-	double R_ni[3][3];
+	// cout << "Current Quaternion: " << ez->currentData().quaternion() << endl;
 
-	YPR(0)=data->ypr.yaw*M_PI/180.;
-	YPR(1)=data->ypr.pitch*M_PI/180.;
-	YPR(2)=data->ypr.roll*M_PI/180.;
+	// However, the CompositeData structure provides the anyAttitude field
+	// which will perform the necessary conversions automatically.
 
-	R_ni(0,0)=cos(YPR(0))*cos(YPR(1));
-	R_ni(0,1)=cos(YPR(0))*sin(YPR(2))*sin(YPR(1)) - cos(YPR(2))*sin(YPR(0));
-	R_ni(0,2)=sin(YPR(0))*sin(YPR(2)) + cos(YPR(0))*cos(YPR(2))*sin(YPR(1));
-	R_ni(1,0)=cos(YPR(1))*sin(YPR(0));
-	R_ni(1,1)=cos(YPR(0))*cos(YPR(2)) + sin(YPR(0))*sin(YPR(2))*sin(YPR(1));
-	R_ni(1,2)=cos(YPR(2))*sin(YPR(0))*sin(YPR(1)) - cos(YPR(0))*sin(YPR(2));
-	R_ni(2,0)=-sin(YPR(1));
-	R_ni(2,1)=cos(YPR(1))*sin(YPR(2));
-	R_ni(2,2)=cos(YPR(2))*cos(YPR(1));
+	cout << "[Quaternion from AnyAttitude]" << endl;
 
-	W_i(0)=data->angularRate.c0;
-	W_i(1)=data->angularRate.c1;
-	W_i(2)=data->angularRate.c2;
+	for (int i = 0; i < 25; i++)
+	{
+		Thread::sleepMs(200);
 
-	a_i(0)=data->acceleration.c0;
-	a_i(1)=data->acceleration.c1;
-	a_i(2)=data->acceleration.c2;
+		// This reads the latest data that has been processed by the EzAsyncData class.
+		CompositeData cd = ez->currentData();
+
+		// Make sure that we have some attitude data.
+		if (!cd.hasAnyAttitude())
+			cout << "Attitude Unavailable." << endl;
+		else
+			cout << "Current Quaternion: " << cd.anyAttitude().quat() << endl;
+	}
+
+	// Throughout this example, we have been using the ez->currentData() to get the most
+	// up-to-date readings from the sensor that have been processed. When called, this
+	// method returns immediately with the current values, thus the reason we have to
+	// put the Thread::sleepMs(200) in the for loop. Otherwise, we would blaze through
+	// the for loop and just print out the same values. The for loop below illustrates
+	// this.
+
+	cout << "[For Loop Without Sleep]" << endl;
+
+	for (int i = 0; i < 25; i++)
+	{
+		CompositeData cd = ez->currentData();
+
+		if (!cd.hasYawPitchRoll())
+			cout << "YPR Unavailable." << endl;
+		else
+			cout << "Current YPR: " << cd.yawPitchRoll() << endl;
+	}
+
+	// Often, we would like to get and process each packet received from the sensor.
+	// This is not realistic with ez->currentData() since it is non-blocking and we
+	// would also have to compare each CompositeData struture for changes in the data.
+	// However, EzAsyncData also provides the getNextData() method which blocks until
+	// a new data packet is available. The for loop below shows how to output each
+	// data packet received from the sensor using getNextData().
+
+	cout << "[getNextData Method]" << endl;
+
+	for (int i = 0; i < 25; i++)
+	{
+		CompositeData cd = ez->getNextData();
+
+		if (!cd.hasYawPitchRoll())
+			cout << "YPR Unavailable." << endl;
+		else
+			cout << "Current YPR: " << cd.yawPitchRoll() << endl;
+	}
+
+	ez->disconnect();
+
+	delete ez;
 
 }

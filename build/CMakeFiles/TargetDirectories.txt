@@ -1,0 +1,3 @@
+/Users/kanishke/Downloads/vnproglib-1.1/c/build/CMakeFiles/rebuild_cache.dir
+/Users/kanishke/Downloads/vnproglib-1.1/c/build/CMakeFiles/edit_cache.dir
+/Users/kanishke/Downloads/vnproglib-1.1/c/build/CMakeFiles/libvnc.dir

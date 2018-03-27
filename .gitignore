@@ -1,10 +1,10 @@
 # Build dir
 /build
-/c/examples/ez_sync_data/build
+/c/examples/ez_async_data/build
 /c/examples/getting_started/build
 /c/examples/sensor/build
 /c/examples/spi/build
-/cpp/examples/ez_sync_data/build
+/cpp/examples/ez_async_data/build
 /cpp/examples/getting_started/build
 /cpp/examples/math/build
 /cpp/examples/uart_protocol/build

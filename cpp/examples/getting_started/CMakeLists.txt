@@ -3,6 +3,7 @@ project(getting_started)
 
 set(CMAKE_SUPPRESS_REGENERATION TRUE)
 
+add_subdirectory(../../../c libvnc)
 add_subdirectory(../.. libvncxx)
 
 if(CMAKE_COMPILER_ID MATCHES "GNU|Clang")
@@ -13,9 +14,11 @@ set(SOURCE_FILES
     main.cpp)
 
 include_directories(../../include)
+include_directories(../../../c/include)
 
 add_executable(getting_started ${SOURCE_FILES})
 
+target_link_libraries(getting_started PUBLIC libvnc)
 target_link_libraries(getting_started PRIVATE libvncxx)
 
 if (UNIX OR APPLE)

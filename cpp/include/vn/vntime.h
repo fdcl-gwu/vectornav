@@ -3,6 +3,7 @@
 
 #include "int.h"
 #include "export.h"
+#include <sys/time.h>
 
 namespace vn {
 namespace xplat {
@@ -35,7 +36,7 @@ class vn_proglib_DLLEXPORT Stopwatch
 {
 
 public:
-	
+
 	/// \brief Creates a new Stopwatch and starts timing.
 	Stopwatch();
 

@@ -1,6 +1,6 @@
 # Build dir
 /build
-/exampels/sensors/build
+/examples/sensor/build
 
 # Saved data
 test0.txt

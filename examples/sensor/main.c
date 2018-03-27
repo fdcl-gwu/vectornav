@@ -28,10 +28,10 @@ int main(void)
 	 * constant below. Also, if you have changed your sensor from the factory
 	 * default baudrate of 115200, you will need to update the baudrate
 	 * constant below as well. */
-	//const char SENSOR_PORT[] = "COM1";	/* Windows format for physical and virtual (USB) serial port. */
+	/*const char SENSOR_PORT[] = "COM1"; */	/* Windows format for physical and virtual (USB) serial port. */
 	/*const char SENSOR_PORT[] = "/dev/ttyS1"; */ /* Linux format for physical serial port. */
-	/*const char SENSOR_PORT[] = "/dev/ttyUSB0"; */ /* Linux format for virtual (USB) serial port. */
-	const char SENSOR_PORT[] = "/dev/tty.usbserial-FTWV7X38"; /* Mac OS X format for virtual (USB) serial port. */
+	const char SENSOR_PORT[] = "/dev/ttyUSB0"; /* Linux format for virtual (USB) serial port. */
+	/*const char SENSOR_PORT[] = "/dev/tty.usbserial-FTWV7X38";*/ /* Mac OS X format for virtual (USB) serial port. */
 	/*const char SENSOR_PORT[] = "/dev/ttyS0"; */ /* CYGWIN format. Usually the Windows COM port number minus 1. This would connect to COM1. */
 	const uint32_t SENSOR_BAUDRATE = 115200;
 

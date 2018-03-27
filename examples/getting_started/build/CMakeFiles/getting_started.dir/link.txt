@@ -1,1 +1,0 @@
-/Library/Developer/CommandLineTools/usr/bin/cc  -Wall -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/getting_started.dir/main.c.o  -o getting_started libvnc/liblibvnc.a -lpthread 

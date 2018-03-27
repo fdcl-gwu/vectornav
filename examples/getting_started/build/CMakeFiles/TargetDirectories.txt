@@ -1,6 +1,0 @@
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/getting_started/build/CMakeFiles/rebuild_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/getting_started/build/CMakeFiles/edit_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/getting_started/build/CMakeFiles/getting_started.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/getting_started/build/libvnc/CMakeFiles/rebuild_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/getting_started/build/libvnc/CMakeFiles/edit_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/getting_started/build/libvnc/CMakeFiles/libvnc.dir

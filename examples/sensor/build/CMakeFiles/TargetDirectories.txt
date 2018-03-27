@@ -1,6 +1,0 @@
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/sensor/build/CMakeFiles/rebuild_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/sensor/build/CMakeFiles/edit_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/sensor/build/CMakeFiles/sensor.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/sensor/build/libvnc/CMakeFiles/rebuild_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/sensor/build/libvnc/CMakeFiles/edit_cache.dir
-/Users/kanishke/Downloads/vnproglib-1.1/c/examples/sensor/build/libvnc/CMakeFiles/libvnc.dir

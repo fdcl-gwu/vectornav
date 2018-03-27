@@ -1,16 +1,4 @@
-#include <iostream>
-
-// Include this header file to get access to the EzAsyncData class.
-#include "vn/ezasyncdata.h"
-
-// We need this file for our sleep function.
-#include "vn/thread.h"
-
-using namespace std;
-using namespace vn::math;
-using namespace vn::sensors;
-using namespace vn::protocol::uart;
-using namespace vn::xplat;
+#include "fdcl_vn100.h"
 
 int main(int argc, char *argv[])
 {

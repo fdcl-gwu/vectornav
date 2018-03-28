@@ -36,7 +36,7 @@ public:
 	//
 	// 	void load_config(fdcl_param& );
 	void open();
-	void open(string, int);
+	void readAscii(string, int);
 
 	// void open();
 	// void loop();

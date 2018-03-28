@@ -13,7 +13,7 @@ void fdcl_vn100::open()
 	port  = "/dev/ttyUSB0";
 	baud_rate = 115200;
 
-	open(port, baud_rate);
+	readAscii(port, baud_rate);
 }
 
 void fdcl_vn100::init(string port, int baud_rate)
@@ -34,7 +34,7 @@ void fdcl_vn100::init(string port, int baud_rate)
 	}
 }
 
-void fdcl_vn100::open(string port, const int baud_rate)
+void fdcl_vn100::readAscii(string port, const int baud_rate)
 {
 
 	// We create and connect to a sensor by the call below.

@@ -4,6 +4,7 @@ fdcl_vn100 imu;
 
 int main(int argc, char *argv[])
 {
-	imu.open();
+	// imu.openAscii();
+	imu.openBinary();
 	return 0;
 }

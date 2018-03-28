@@ -1,5 +1,5 @@
-#ifndef _FDCL_VN_100_H
-#define _FDCL_VN_100_H
+#ifndef FDCL_VN_100_H
+#define FDCL_VN_100_H
 
 #include <iostream>
 
@@ -35,8 +35,13 @@ public:
 	// 	static void callback(void* sender, VnDeviceCompositeData* data);
 	//
 	// 	void load_config(fdcl_param& );
-	void open();
+	void openAscii();
 	void readAscii(string, int);
+
+	void openBinary();
+	void readBinary(string, int);
+
+	// static void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
 	// void open();
 	// void loop();
@@ -44,8 +49,8 @@ public:
 	//
 	private:
 		EzAsyncData* ez;
+		static void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
-		void init(string, int);
 	// 	VN_ERROR_CODE errorCode;
 	// 	Vn100 vn100;
 };

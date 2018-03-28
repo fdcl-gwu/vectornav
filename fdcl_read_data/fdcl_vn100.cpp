@@ -4,11 +4,85 @@ fdcl_vn100::~fdcl_vn100()
 {
 }
 
+
 fdcl_vn100::fdcl_vn100()
 {
 }
 
-void fdcl_vn100::open()
+
+void fdcl_vn100::openBinary()
+{
+	port  = "/dev/ttyUSB0";
+	baud_rate = 115200;
+
+	readBinary(port, baud_rate);
+}
+
+
+void fdcl_vn100::readBinary(string port, int baud_rate)
+{
+	// Now let's create a VnSensor object and use it to connect to our sensor.
+	VnSensor vs;
+	vs.connect(port, baud_rate);
+
+	BinaryOutputRegister bor(
+		ASYNCMODE_PORT1,
+		200,
+		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL, // Note use of binary OR to configure flags.
+		TIMEGROUP_NONE,
+		IMUGROUP_NONE,
+		GPSGROUP_NONE,
+		ATTITUDEGROUP_NONE,
+		INSGROUP_NONE
+	);
+
+	vs.writeBinaryOutput1(bor);
+	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
+	cout << "Starting sleep..." << endl;
+	Thread::sleepSec(5);
+	vs.unregisterAsyncPacketReceivedHandler();
+	vs.disconnect();
+
+}
+
+
+void fdcl_vn100::asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index)
+{
+    if (p.type() == Packet::TYPE_ASCII && p.determineAsciiAsyncType() == VNYPR)
+    {
+        vec3f ypr;
+        p.parseVNYPR(&ypr);
+        cout << "ASCII Async YPR: " << ypr << endl;
+        return;
+    }
+    if (p.type() == Packet::TYPE_BINARY)
+    {
+        // First make sure we have a binary packet type we expect since there
+        // are many types of binary output types that can be configured.
+        if (!p.isCompatible(
+            COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,
+            TIMEGROUP_NONE,
+            IMUGROUP_NONE,
+            GPSGROUP_NONE,
+            ATTITUDEGROUP_NONE,
+            INSGROUP_NONE))
+            // Not the type of binary packet we are expecting.
+            return;
+        // Ok, we have our expected binary output packet. Since there are many
+        // ways to configure the binary data output, the burden is on the user
+        // to correctly parse the binary packet. However, we can make use of
+        // the parsing convenience methods provided by the Packet structure.
+        // When using these convenience methods, you have to extract them in
+        // the order they are organized in the binary packet per the User Manual.
+        uint64_t timeStartup = p.extractUint64();
+        vec3f ypr = p.extractVec3f();
+        cout << "Binary Async TimeStartup: " << timeStartup << endl;
+        cout << "Binary Async YPR: " << ypr << endl;
+    }
+}
+
+
+void fdcl_vn100::openAscii()
 {
 	port  = "/dev/ttyUSB0";
 	baud_rate = 115200;
@@ -16,8 +90,13 @@ void fdcl_vn100::open()
 	readAscii(port, baud_rate);
 }
 
-void fdcl_vn100::init(string port, int baud_rate)
+
+void fdcl_vn100::readAscii(string port, const int baud_rate)
 {
+
+	// We create and connect to a sensor by the call below.
+	ez = EzAsyncData::connect(port, baud_rate);
+
 	// Now let's display the latest yaw, pitch, roll data at 5 Hz for 5 seconds.
 	for (int i = 0; i < 5; i++)
 	{
@@ -32,15 +111,6 @@ void fdcl_vn100::init(string port, int baud_rate)
 		else
 		cout << "Current YPR: " << cd.yawPitchRoll() << endl;
 	}
-}
-
-void fdcl_vn100::readAscii(string port, const int baud_rate)
-{
-
-	// We create and connect to a sensor by the call below.
-	ez = EzAsyncData::connect(port, baud_rate);
-
-	init(port, baud_rate);
 
 	// Most of the asynchronous data handling is done by EzAsyncData but there are times
 	// when we wish to configure the sensor directly while still having EzAsyncData do

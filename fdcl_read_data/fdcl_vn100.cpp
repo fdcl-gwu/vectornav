@@ -21,13 +21,13 @@ void fdcl_vn100::openBinary()
 
 void fdcl_vn100::readBinary(string port, int baud_rate)
 {
-	// Now let's create a VnSensor object and use it to connect to our sensor.
+	// create a VnSensor object and use it to connect to sensor.
 	VnSensor vs;
 	vs.connect(port, baud_rate);
 
 	BinaryOutputRegister bor(
 		ASYNCMODE_PORT2,
-		4,
+		4, // 200 Hz
 		COMMONGROUP_YAWPITCHROLL | COMMONGROUP_ANGULARRATE | COMMONGROUP_ACCEL, // Note use of binary OR to configure flags.
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
@@ -74,10 +74,12 @@ void fdcl_vn100::asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, si
         // the parsing convenience methods provided by the Packet structure.
         // When using these convenience methods, you have to extract them in
         // the order they are organized in the binary packet per the User Manual.
-        uint64_t timeStartup = p.extractUint64();
         vec3f ypr = p.extractVec3f();
-        cout << "Binary Async TimeStartup: " << timeStartup << endl;
-        cout << "Binary Async YPR: " << ypr << endl;
+				vec3f ang_rate = p.extractVec3f();
+				vec3f accel = p.extractVec3f();
+        cout << "Binary Async YPR: " << ypr;
+        cout << "\tBinary Async W: " << ang_rate;
+				cout << "\tBinary Async a: " << accel << endl;
     }
 }
 

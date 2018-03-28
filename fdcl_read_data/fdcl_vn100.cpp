@@ -26,9 +26,9 @@ void fdcl_vn100::readBinary(string port, int baud_rate)
 	vs.connect(port, baud_rate);
 
 	BinaryOutputRegister bor(
-		ASYNCMODE_PORT1,
-		200,
-		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL, // Note use of binary OR to configure flags.
+		ASYNCMODE_PORT2,
+		4,
+		COMMONGROUP_YAWPITCHROLL | COMMONGROUP_ANGULARRATE | COMMONGROUP_ACCEL, // Note use of binary OR to configure flags.
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
 		GPSGROUP_NONE,
@@ -60,7 +60,7 @@ void fdcl_vn100::asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, si
         // First make sure we have a binary packet type we expect since there
         // are many types of binary output types that can be configured.
         if (!p.isCompatible(
-            COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,
+            COMMONGROUP_YAWPITCHROLL | COMMONGROUP_ANGULARRATE | COMMONGROUP_ACCEL,
             TIMEGROUP_NONE,
             IMUGROUP_NONE,
             GPSGROUP_NONE,

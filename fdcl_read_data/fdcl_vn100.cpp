@@ -26,8 +26,7 @@ void fdcl_vn100::readBinary(string port, int baud_rate)
 
 	cout << "Connecting to IMU at " << port << " .." << endl;
 
-	const uint32_t baud = 115200;
-	vs.connect(port, baud);
+	vs.connect(port, baud_rate);
 
 	string mn = vs.readModelNumber();
 	cout << "Model Number: " << mn << endl;

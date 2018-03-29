@@ -23,11 +23,21 @@ void fdcl_vn100::readBinary(string port, int baud_rate)
 {
 	// create a VnSensor object and use it to connect to sensor.
 	VnSensor vs;
-	vs.connect(port, baud_rate);
+
+	cout << "Connecting to IMU at " << port << " .." << endl;
+
+	const uint32_t baud = 115200;
+	vs.connect(port, baud);
+
+	string mn = vs.readModelNumber();
+	cout << "Model Number: " << mn << endl;
+
+	cout << "Setting up binary output register .." << endl;
+	vs.writeAsyncDataOutputType(VNOFF);  // disable ASCII output
 
 	BinaryOutputRegister bor(
-		ASYNCMODE_PORT2,
-		4, // 200 Hz
+		ASYNCMODE_PORT1,
+		200, // 200 Hz
 		COMMONGROUP_YAWPITCHROLL | COMMONGROUP_ANGULARRATE | COMMONGROUP_ACCEL, // Note use of binary OR to configure flags.
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
@@ -35,8 +45,8 @@ void fdcl_vn100::readBinary(string port, int baud_rate)
 		ATTITUDEGROUP_NONE,
 		INSGROUP_NONE
 	);
-
 	vs.writeBinaryOutput1(bor);
+
 	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
 	cout << "Starting sleep..." << endl;
 	Thread::sleepSec(5);

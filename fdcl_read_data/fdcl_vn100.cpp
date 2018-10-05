@@ -1,11 +1,15 @@
 #include "fdcl_vn100.h"
 
-fdcl_vn100::~fdcl_vn100()
+struct timespec tspec_init, tspec_curr;
+double t, t_pre;
+
+fdcl_vn100::fdcl_vn100()
 {
+    clock_gettime(CLOCK_REALTIME, &tspec_init);
 }
 
 
-fdcl_vn100::fdcl_vn100()
+fdcl_vn100::~fdcl_vn100()
 {
 }
 
@@ -34,7 +38,7 @@ void fdcl_vn100::readBinary(string port, int baud_rate)
 
 	BinaryOutputRegister bor(
 		ASYNCMODE_PORT1,
-		200, // 4 Hz
+		4, // 200 Hz
 		COMMONGROUP_YAWPITCHROLL | COMMONGROUP_ANGULARRATE | COMMONGROUP_ACCEL, // Note use of binary OR to configure flags.
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
@@ -84,9 +88,16 @@ void fdcl_vn100::asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, si
         vec3f ypr = p.extractVec3f();
 				vec3f ang_rate = p.extractVec3f();
 				vec3f accel = p.extractVec3f();
-        cout << "Binary Async YPR: " << ypr;
-        cout << "\tBinary Async W: " << ang_rate;
-				cout << "\tBinary Async a: " << accel << endl;
+        // cout << "Binary Async YPR: " << ypr;
+        // cout << "\tBinary Async W: " << ang_rate;
+		// 		cout << "\tBinary Async a: " << accel << endl;
+
+        clock_gettime(CLOCK_REALTIME, &tspec_curr);
+        t=(double) tspec_curr.tv_sec+ ((double)tspec_curr.tv_nsec)/1.e9;
+        t-=(double) tspec_init.tv_sec+ ((double)tspec_init.tv_nsec)/1.e9;
+
+        cout  << (int) (1 / (t - t_pre)) << endl;
+        t_pre = t;
     }
 }
 

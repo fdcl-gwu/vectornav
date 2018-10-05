@@ -2,6 +2,7 @@
 #define FDCL_VN_100_H
 
 #include <iostream>
+#include <time.h>
 
 // Include this header file to get access to the EzAsyncData class.
 #include "vn/ezasyncdata.h"
@@ -9,11 +10,17 @@
 // We need this file for our sleep function.
 #include "vn/thread.h"
 
+// #include "freq_checker.h"
+
+#include <time.h>
+// struct timespec tspec_init, tspec_curr;
+
 using namespace std;
 using namespace vn::math;
 using namespace vn::sensors;
 using namespace vn::protocol::uart;
 using namespace vn::xplat;
+
 
 // #include "vectornav.h"
 // #include "fdcl_param.h"
@@ -24,6 +31,7 @@ class fdcl_vn100
 public:
 	fdcl_vn100();
 	~fdcl_vn100();
+
 	//
 	// string port; //"/dev/ttyTHS2";
 	string port;
@@ -47,7 +55,9 @@ public:
 	// void loop();
 	// 	void close();
 	//
+    // static double t;
 	private:
+        // static struct timespec tspec_init, tspec_curr;
 		EzAsyncData* ez;
 		static void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 

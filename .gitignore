@@ -10,6 +10,7 @@
 /cpp/examples/uart_protocol/build
 /fdcl_read_data/build
 /fdcl_test/build
+/vn200_test/build
 
 # Saved data
 test0.txt

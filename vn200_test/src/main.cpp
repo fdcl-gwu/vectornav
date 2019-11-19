@@ -1,4 +1,7 @@
+#include <iomanip>
 #include <iostream>
+#include <limits>
+
 
 // Include this header file to get access to VectorNav sensors.
 #include "vn/sensors.h"
@@ -37,7 +40,7 @@ int main(int argc, char *argv[])
 	// const string port = "COM1";                             // Windows format for physical and virtual (USB) serial port.
 	// const string port = "/dev/ttyS1";                    // Linux format for physical serial port.
 	// const string port = "/dev/ttyUSB0";                  // Linux format for virtual (USB) serial port.
-	const string port = "/dev/tty.usbserial-A9080HW3"; // Mac OS X format for virtual (USB) serial port.
+	const string port = "/dev/tty.usbserial-A904RS9S"; // Mac OS X format for virtual (USB) serial port.
 	// const string portm = "/dev/ttyS0";                    // CYGWIN format. Usually the Windows COM port number minus 1. This would connect to COM1.
 	const uint32_t baud_rate = 115200;
 
@@ -73,7 +76,7 @@ int main(int argc, char *argv[])
 	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
 	
 	cout << "Starting sleep..." << endl;
-	Thread::sleepSec(5);
+	Thread::sleepSec(60);
 	
 	vs.unregisterAsyncPacketReceivedHandler();
 	vs.disconnect();
@@ -106,6 +109,7 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index)
 			INSGROUP_LINEARACCELECEF | INSGROUP_POSU | INSGROUP_VELU))
 			// Not the type of binary packet we are expecting.
 			{
+std::cout << 	1 <<std::endl;
 				return;
 			}
 
@@ -120,12 +124,27 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index)
 		uint16_t ins_status = p.extractUint16();
 
 		unsigned r;
+
+		// INS Status
+		// 0 - Not tracking, initializing
+		// 1 - Aligning
+		// 2 - Tracking
+		// 3 - Loss of GPS for more than 45 seconds
 		r = createMask(0, 1);
-		unsigned mode = r & ins_status;
+		unsigned int mode = r & ins_status;
+
+
+		// GPS Fix
+		// 0 - No fix
+		// 1 - Only UTC
+		// 2 - 2D fix
+		// 3 - 3D fix
 		r = createMask(2, 2);
-		unsigned gps_fix = r & ins_status;
+		unsigned int gps_fix = r & ins_status;
+
+
 		r = createMask(3, 6);
-		unsigned sensor_error = r & ins_status;
+		unsigned int sensor_error = r & ins_status;
 
 		cout << timeStartup;
 		cout << "," << ypr[0] << "," << ypr[1] << "," << ypr[2];
@@ -134,17 +153,16 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index)
 		bool flag_ins_available = !(mode==0);
 		if (flag_ins_available)
 		{
-			vec3f pos_ecef = p.extractVec3f();
+			vec3d pos_ecef = p.extractVec3d();
 			vec3f vel_ecef = p.extractVec3f();
 			vec3f acc_ecef = p.extractVec3f();
-			vec3f posu_ecef = p.extractVec3f();
-			vec3f velu_ecef = p.extractVec3f();
+			float posu_ecef = p.extractFloat();
+			float velu_ecef = p.extractFloat();
 
-			cout << "," << pos_ecef[0] << "," << pos_ecef[1] << "," << pos_ecef[2];
+			cout << "," << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << pos_ecef[0] << "," << pos_ecef[1] << "," << pos_ecef[2];
 			cout << "," << vel_ecef[0] << "," << vel_ecef[1] << "," << vel_ecef[2];
 			cout << "," << acc_ecef[0] << "," << acc_ecef[1] << "," << acc_ecef[2];
-			cout << "," << posu_ecef[0] << "," << posu_ecef[1] << "," << posu_ecef[2];
-			cout << "," << velu_ecef[0] << "," << velu_ecef[1] << "," << velu_ecef[2];
+			cout << "," << posu_ecef << "," << velu_ecef;
 		}
 
 		cout << endl;

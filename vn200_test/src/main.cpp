@@ -64,13 +64,14 @@ int main(int argc, char *argv[])
 	BinaryOutputRegister bor(
 		ASYNCMODE_PORT2,
 		80, // 10 Hz
-		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,
+		COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL | \
+		COMMONGROUP_ANGULARRATE,
 		TIMEGROUP_NONE,
 		IMUGROUP_NONE,
-		GPSGROUP_NONE,
-		ATTITUDEGROUP_NONE,
-		INSGROUP_INSSTATUS | INSGROUP_POSECEF | INSGROUP_VELECEF | \
-		INSGROUP_LINEARACCELECEF | INSGROUP_POSU | INSGROUP_VELU);
+		GPSGROUP_NUMSATS,
+		ATTITUDEGROUP_LINEARACCELBODY,
+		INSGROUP_INSSTATUS | INSGROUP_POSLLA | INSGROUP_VELNED | \
+		INSGROUP_POSU | INSGROUP_VELU);
 	vs.writeBinaryOutput1(bor);
 
 	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
@@ -100,13 +101,14 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index)
 		// First make sure we have a binary packet type we expect since there
 		// are many types of binary output types that can be configured.
 		if (!p.isCompatible(
-			COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL,
+			COMMONGROUP_TIMESTARTUP | COMMONGROUP_YAWPITCHROLL | \
+			COMMONGROUP_ANGULARRATE,
 			TIMEGROUP_NONE,
 			IMUGROUP_NONE,
-			GPSGROUP_NONE,
-			ATTITUDEGROUP_NONE,
-			INSGROUP_INSSTATUS | INSGROUP_POSECEF | INSGROUP_VELECEF | 
-			INSGROUP_LINEARACCELECEF | INSGROUP_POSU | INSGROUP_VELU))
+			GPSGROUP_NUMSATS,
+			ATTITUDEGROUP_LINEARACCELBODY,
+			INSGROUP_INSSTATUS | INSGROUP_POSLLA | INSGROUP_VELNED | \
+			INSGROUP_POSU | INSGROUP_VELU))
 			// Not the type of binary packet we are expecting.
 			{
 std::cout << 	1 <<std::endl;
@@ -121,6 +123,9 @@ std::cout << 	1 <<std::endl;
 		// the order they are organized in the binary packet per the User Manual.
 		uint64_t timeStartup = p.extractUint64();
 		vec3f ypr = p.extractVec3f();
+		vec3f ang_rate = p.extractVec3f();
+		vec3f accel = p.extractVec3f();
+		uint16_t num_sats = p.extractUint16();
 		uint16_t ins_status = p.extractUint16();
 
 		unsigned r;
@@ -153,16 +158,14 @@ std::cout << 	1 <<std::endl;
 		bool flag_ins_available = !(mode==0);
 		if (flag_ins_available)
 		{
-			vec3d pos_ecef = p.extractVec3d();
-			vec3f vel_ecef = p.extractVec3f();
-			vec3f acc_ecef = p.extractVec3f();
-			float posu_ecef = p.extractFloat();
-			float velu_ecef = p.extractFloat();
+			vec3d pos_lla = p.extractVec3d();
+			vec3f vel_ned = p.extractVec3f();
+			float pos_u = p.extractFloat();
+			float vel_u = p.extractFloat();
 
-			cout << "," << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << pos_ecef[0] << "," << pos_ecef[1] << "," << pos_ecef[2];
-			cout << "," << vel_ecef[0] << "," << vel_ecef[1] << "," << vel_ecef[2];
-			cout << "," << acc_ecef[0] << "," << acc_ecef[1] << "," << acc_ecef[2];
-			cout << "," << posu_ecef << "," << velu_ecef;
+			cout << "," << std::setprecision(std::numeric_limits<long double>::digits10 + 1)  << "," << pos_lla[0] << "," << pos_lla[1] << "," << pos_lla[2];
+			cout << "," << vel_ned[0] << "," << vel_ned[1] << "," << vel_ned[2];
+			cout << "," << pos_u << "," << vel_u;
 		}
 
 		cout << endl;

@@ -1,7 +1,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-
+#include <bits/stdc++.h> 
 
 // Include this header file to get access to VectorNav sensors.
 #include "vn/sensors.h"
@@ -15,18 +15,11 @@ using namespace vn::sensors;
 using namespace vn::protocol::uart;
 using namespace vn::xplat;
 
+
 // Method declarations for future use.
 void asciiAsyncMessageReceived(void* userData, Packet& p, size_t index);
 void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index);
 
-unsigned createMask(unsigned a, unsigned b)
-{
-	unsigned r = 0;
-	for (unsigned i = a; i <= b; i++)
-		r |= 1 << i;
-
-	return r;
-}
 
 int main(int argc, char *argv[])
 {
@@ -38,11 +31,11 @@ int main(int argc, char *argv[])
 	// default baudrate of 115200, you will need to update the baudrate
 	// constant below as well.
 	// const string port = "COM1";                             // Windows format for physical and virtual (USB) serial port.
-	// const string port = "/dev/ttyS1";                    // Linux format for physical serial port.
+	const string port = "/dev/ttyTHS2";                    // Linux format for physical serial port.
 	// const string port = "/dev/ttyUSB0";                  // Linux format for virtual (USB) serial port.
-	const string port = "/dev/tty.usbserial-A904RS9S"; // Mac OS X format for virtual (USB) serial port.
+	// const string port = "/dev/tty.usbserial-A904RS9S"; // Mac OS X format for virtual (USB) serial port.
 	// const string portm = "/dev/ttyS0";                    // CYGWIN format. Usually the Windows COM port number minus 1. This would connect to COM1.
-	const uint32_t baud_rate = 115200;
+	const uint32_t baud_rate = 230400;
 
 	VnSensor vs;
 	cout << "Connecting to IMU at " << port << " .." << endl;
@@ -77,7 +70,7 @@ int main(int argc, char *argv[])
 	vs.registerAsyncPacketReceivedHandler(NULL, asciiOrBinaryAsyncMessageReceived);
 	
 	cout << "Starting sleep..." << endl;
-	Thread::sleepSec(60);
+	Thread::sleepSec(30);
 	
 	vs.unregisterAsyncPacketReceivedHandler();
 	vs.disconnect();
@@ -111,7 +104,7 @@ void asciiOrBinaryAsyncMessageReceived(void* userData, Packet& p, size_t index)
 			INSGROUP_POSU | INSGROUP_VELU))
 			// Not the type of binary packet we are expecting.
 			{
-std::cout << 	1 <<std::endl;
+                                std::cout << "Wrong packet, dropping the data .."  << std::endl;
 				return;
 			}
 
@@ -125,18 +118,22 @@ std::cout << 	1 <<std::endl;
 		vec3f ypr = p.extractVec3f();
 		vec3f ang_rate = p.extractVec3f();
 		vec3f accel = p.extractVec3f();
-		uint16_t num_sats = p.extractUint16();
-		uint16_t ins_status = p.extractUint16();
-
-		unsigned r;
-
-		// INS Status
+		uint8_t num_sats = p.extractUint8();
+		uint16_t status = p.extractUint16();
+                std::bitset<16> ins_status(status);
+                
+                // for (int i = 0; i < 16; i++) std::cout << ins_status[i] << ",";
+                // std::cout << std::endl;
+		
+                // INS Status
 		// 0 - Not tracking, initializing
 		// 1 - Aligning
 		// 2 - Tracking
 		// 3 - Loss of GPS for more than 45 seconds
-		r = createMask(0, 1);
-		unsigned int mode = r & ins_status;
+                std::bitset<2> mode_bits;
+                mode_bits[0] = ins_status[0];
+                mode_bits[1] = ins_status[1];
+		unsigned int mode = mode_bits.to_ulong();
 
 
 		// GPS Fix
@@ -144,28 +141,28 @@ std::cout << 	1 <<std::endl;
 		// 1 - Only UTC
 		// 2 - 2D fix
 		// 3 - 3D fix
-		r = createMask(2, 2);
-		unsigned int gps_fix = r & ins_status;
+                // NOTE: Reading GPS fix from the INS status only provides whether a GPS fix is available or not.
+                // To chech whether the fix is 2D/3D, needs to read GPS registers, which is not implemented here.
+                // Current implementation:
+                // 0 - No fix
+                // 1 - Fix available
+		unsigned int gps_fix = ins_status[2];
 
+		cout << timeStartup << "," << ins_status;
+		cout << "," << mode << "," << gps_fix;  // << sensor_error;
+		cout << "," << ypr[0] << "," << ypr[1] << "," << ypr[2] << ",";
 
-		r = createMask(3, 6);
-		unsigned int sensor_error = r & ins_status;
-
-		cout << timeStartup;
-		cout << "," << ypr[0] << "," << ypr[1] << "," << ypr[2];
-		cout << "," << mode << "," << gps_fix << "," << sensor_error;
-
-		bool flag_ins_available = !(mode==0);
-		if (flag_ins_available)
+		if (gps_fix)
 		{
 			vec3d pos_lla = p.extractVec3d();
 			vec3f vel_ned = p.extractVec3f();
 			float pos_u = p.extractFloat();
 			float vel_u = p.extractFloat();
 
-			cout << "," << std::setprecision(std::numeric_limits<long double>::digits10 + 1)  << "," << pos_lla[0] << "," << pos_lla[1] << "," << pos_lla[2];
-			cout << "," << vel_ned[0] << "," << vel_ned[1] << "," << vel_ned[2];
-			cout << "," << pos_u << "," << vel_u;
+			cout << "," << std::setprecision(std::numeric_limits<long double>::digits10 + 1)  
+                            << "," << pos_lla[0] << "," << pos_lla[1] << "," << pos_lla[2]
+			    << "," << vel_ned[0] << "," << vel_ned[1] << "," << vel_ned[2]
+			    << "," << pos_u << "," << vel_u;
 		}
 
 		cout << endl;
